@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.1.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.1.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.1.xsd">
+
+	<!-- 加载配置文件 -->
+	<util:properties id="propertiesReader" location="classpath:jdbc.properties" />
+
+	<!-- dataSource(数据库连接池) 访问 Oracle 数据库 -->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+		<property name="driverClassName" value="#{propertiesReader[driver]}" />
+		<property name="url" value="#{propertiesReader[url]}" />
+		<property name="username" value="#{propertiesReader[username]}" />
+		<property name="password" value="#{propertiesReader[password]}" />
+	</bean>
+	
+	
+	<!-- sessionFactory -->
+	<bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+		<property name="dataSource">
+			<ref bean="dataSource" />
+		</property>
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">
+					org.hibernate.dialect.Oracle10gDialect
+				</prop>
+				<prop key="hibernate.show_sql">true</prop>
+				<prop key="hibernate.format_sql">true</prop>
+			</props>
+		</property>
+		
+		<property name="mappingResources">
+			<list>
+				<value>com/staff/pojo/Staff.hbm.xml</value>
+			</list>
+		</property>
+	</bean>
+	
+	
+	<!-- 注入session工厂 -->
+	<bean id="staffDao" class="com.staff.dao.StaffDaoImpl">
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+	
+	<!-- 注入dao -->
+	<bean id="staffService" class="com.staff.service.StaffServiceImpl">
+		<property name="staffDao" ref="staffDao"></property>
+	</bean>
+	
+	<!-- 注入service-->
+	<bean id="staffAction" class="com.staff.action.StaffAction">
+		<property name="staffService" ref="staffService"></property>
+	</bean>
+
+
+
+	
+	<!-- 配置 Spring - Hiberante 事务管理 -->
+	<import resource="applicationContext-tx.xml" />
+</beans>
+
+
