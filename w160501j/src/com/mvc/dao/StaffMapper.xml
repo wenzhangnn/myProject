@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mappper.dtd">
+
+<mapper namespace="com.mvc.dao.StaffMapper">
+
+	<resultMap type="com.mvc.pojo.Staff" id="staff-result">
+		<id property="empno" column="empno"/>
+		<result property="ename" column="ename"/>
+		<result property="job" column="job"/>
+		<result property="dname" column="dname"/>
+		<result property="loc" column="loc"/>
+		<result property="sal" column="sal"/>
+	</resultMap>
+	
+	
+	<sql id="pageSQLHead">
+		select empno,ename,job,dname,loc,sal from (select row_number() over(
+	</sql>
+	
+	<sql id="orderBy">
+		<if test="sort !=null and order!=null">
+			order by
+			<choose>
+				<when test="sort=='ename'">ename</when>
+				<when test="sort=='job'">job</when>
+				<when test="sort=='dname'">dname</when>
+				<when test="sort=='loc'">loc</when>
+				<when test="sort=='sal'">sal</when>
+				<otherwise>empno</otherwise>
+			</choose>
+		<if test="order=='asc'">asc</if>
+		<if test="order=='desc'">desc</if>
+		</if>
+	</sql>		
+	
+	<sql id="pageSQLFoot">
+		<![CDATA[ ) where rn >#{beginPage} and rn<=#{endPage} ]]>
+	</sql>
+	
+	<select id="findPager" resultMap="staff-result">
+		<include refid="pageSQLHead" />
+		<include refid="orderBy" />
+		) rn,emp.*,dept.* from emp,dept where emp.deptno=dept.deptno
+		<include refid="pageSQLFoot" />
+	</select>		
+	
+
+</mapper>
+
